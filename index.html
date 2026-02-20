@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="input.css">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+  <title>Visual Algorithm Interpreter</title>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <img src="/logo.png" alt="Logo">
+      <h1>Algorithm Builder</h1>
+    </div>
+
+    <div class="controls">
+      <button id="runBtn">Run</button>
+      <button id="resetBtn">Reset</button>
+      <button id="settingsBtn" class="icon-btn">
+        <i class='bx bx-cog'></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <h2>Blocks</h2>
+      <div class="block" draggable="true">Declaration</div>
+      <div class="block" draggable="true">Assignment</div>
+      <div class="block" draggable="true">IF</div>
+      <div class="block" draggable="true">WHILE</div>
+    </aside>
+
+    <!-- WORKSPACE -->
+    <section class="workspace">
+      <h2>Workspace</h2>
+    </section>
+
+    <!-- MEMORY PANEL -->
+    <aside class="memory-panel">
+      <h2>Memory</h2>
+    </aside>
+  </main>
+
+  <!-- CONSOLE -->
+  <footer class="console">
+    <h2>Console</h2>
+  </footer>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Settings</h3>
+        <i class='bx bx-x close-btn' id="closeModal"></i>
+      </div>
+      <div class="modal-body">
+        <label class="dark-mode-label">
+          <span>Dark Mode</span>
+          <button id="themeToggle" class="theme-toggle">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="/js/main.js"></script>
+
+</body>
+</html>
