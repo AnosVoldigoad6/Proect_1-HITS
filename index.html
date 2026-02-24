@@ -30,32 +30,51 @@
   </header>
 
   <!-- MAIN CONTENT -->
-  <main class="app-container">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <h2>Blocks</h2>
-      <div class="block" draggable="true">Declaration</div>
-      <div class="block" draggable="true">Assignment</div>
-      <div class="block" draggable="true">IF</div>
-      <div class="block" draggable="true">WHILE</div>
-    </aside>
+ <!-- MAIN CONTENT -->
+<main class="app-container">
 
-    <!-- WORKSPACE -->
-    <section class="workspace">
-      <h2>Workspace</h2>
-    </section>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>Blocks</h2>
+    <div class="block" draggable="true">Declaration</div>
+    <div class="block" draggable="true">Assignment</div>
+    <div class="block" draggable="true">IF</div>
+    <div class="block" draggable="true">WHILE</div>
+  </aside>
 
-    <!-- MEMORY PANEL -->
-    <aside class="memory-panel">
-      <h2>Memory</h2>
-    </aside>
-  </main>
+  <!-- ПРАВАЯ ЧАСТЬ (workspace + memory + console) -->
+  <div class="main-area">
+    
+    <div class="top-area">
+      <!-- WORKSPACE -->
+      <section class="workspace">
+        <h2>Workspace</h2>
+      </section>
 
-  <!-- CONSOLE -->
-  <footer class="console">
-    <h2>Console</h2>
-  </footer>
+      <!-- MEMORY PANEL -->
+      <!-- <aside class="memory-panel">
+        <h2>Memory</h2>
+      </aside> -->
+    </div>
 
+    <!-- CONSOLE -->
+    <div class="console">
+  <div class="console-header">Console</div>
+
+  <div class="console-output" id="consoleOutput"></div>
+
+  <div class="console-input-line">
+    <span class="prompt">></span>
+    <input type="text" id="consoleInput" autocomplete="off" />
+  </div>
+</div>
+
+  </div>
+
+</main>
+
+
+  
   <!-- SETTINGS MODAL -->
   <div class="modal" id="settingsModal">
     <div class="modal-content">

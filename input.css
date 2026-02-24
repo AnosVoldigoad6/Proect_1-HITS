@@ -1,4 +1,4 @@
-
+/* ---------------------- GLOBAL ---------------------- */
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +16,7 @@ body {
   position: relative;
 }
 
-/* Watermark логотип на фоне */
+/* Watermark */
 body::before {
   content: "";
   position: fixed;
@@ -28,10 +28,8 @@ body::before {
   z-index: 0;
 }
 
-/* Контент поверх фона */
 header,
-.app-container,
-.console {
+.app-container {
   position: relative;
   z-index: 1;
 }
@@ -66,13 +64,10 @@ header,
   letter-spacing: 0.5px;
 }
 
-/* ------------------ Кнопки в header ------------------ */
-
-
 .controls {
-  display: flex;           
-  align-items: center;     
-  gap: 12px;               
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .controls button {
@@ -108,9 +103,6 @@ header,
 .icon-btn {
   background: #f1f5f9;
   border: 1px solid #dbe3ed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* ------------------ MAIN LAYOUT ------------------ */
@@ -119,12 +111,13 @@ header,
   display: flex;
   padding: 25px 40px;
   gap: 25px;
+  overflow: hidden;
 }
 
-/* ------------------ SIDEBAR, WORKSPACE, MEMORY ------------------ */
-.sidebar,
-.workspace,
-.memory-panel {
+/* Sidebar (Blocks) */
+.sidebar {
+  width: 240px;
+  height: 100%;
   border-radius: 18px;
   padding: 25px;
   background: #ffffff;
@@ -132,22 +125,35 @@ header,
   box-shadow:
     0 10px 25px rgba(0,0,0,0.05),
     0 2px 6px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
 }
 
-.sidebar { width: 240px; }
-.workspace { flex: 1; background: linear-gradient(to bottom, #ffffff, #f8fafc); }
-.memory-panel { width: 240px; background: linear-gradient(to bottom, #ffffff, #f1f5f9); }
+/* Правая часть */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
 
-/* ------------------ TITLES ------------------ */
-.sidebar h2,
-.workspace h2,
-.memory-panel h2,
-.console h2 {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #64748b;
-  margin-bottom: 20px;
+/* Верх (workspace + memory) */
+.top-area {
+  flex: 1;
+  display: flex;
+  gap: 25px;
+}
+
+/* Workspace */
+.workspace {
+  flex: 1;
+  border-radius: 18px;
+  padding: 25px;
+  background: linear-gradient(to bottom, #ffffff, #f8fafc);
+  border: 1px solid #dbe3ed;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.05),
+    0 2px 6px rgba(0,0,0,0.03);
 }
 
 /* ------------------ BLOCKS ------------------ */
@@ -160,7 +166,6 @@ header,
   cursor: grab;
   font-weight: 500;
   box-shadow: 0 4px 8px rgba(0,0,0,0.04);
-  transition: all 0.2s;
 }
 
 .block:hover {
@@ -171,11 +176,77 @@ header,
 
 /* ------------------ CONSOLE ------------------ */
 .console {
-  height: 130px;
-  padding: 20px 40px;
-  background: #ffffff;
-  border-top: 1px solid #dbe3ed;
-  box-shadow: 0 -6px 15px rgba(0,0,0,0.04);
+  height: 180px;
+  border-radius: 18px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25),
+    0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: Consolas, monospace;
+}
+
+.console-header {
+  padding: 10px 15px;
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.console-output {
+  flex: 1;
+  padding: 12px 15px;
+  overflow-y: auto;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.console-output::-webkit-scrollbar {
+  width: 6px;
+}
+.console-output::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+.console-input-line {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-top: 1px solid #1e293b;
+  background: #020617;
+}
+
+.prompt {
+  color: #22c55e;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.console-input-line input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-family: Consolas, monospace;
+  caret-color: #22c55e;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.console-input-line input:focus {
+  animation: blink 1s step-start infinite;
 }
 
 /* ------------------ MODAL ------------------ */
@@ -197,23 +268,29 @@ header,
   pointer-events: all;
 }
 
+.modal-body {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+
+   
+}
+
+
 .modal-content {
   width: 320px;
   background: #ffffff;
   border-radius: 18px;
   padding: 25px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.15),
-              0 10px 20px rgba(0,0,0,0.1);
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-20px) scale(0.95); opacity: 0; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
+  box-shadow:
+    0 25px 50px rgba(0,0,0,0.15),
+    0 10px 20px rgba(0,0,0,0.1);
 }
 
 .modal-header {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -225,46 +302,11 @@ header,
   font-size: 22px;
 }
 
-/* ------------------ DARK MODE В MODAL ------------------ */
-.dark-mode-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.theme-toggle {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid #dbe3ed;
-  background: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-  transition: 0.3s;
-}
-
-.theme-toggle i {
-  font-size: 18px;
-  transition: transform 0.6s ease, color 0.3s;
-}
-
-.theme-toggle:hover i {
-  transform: rotate(10deg);
-}
-
 /* ------------------ DARK MODE ------------------ */
 body.dark {
   background: #0f172a;
   color: #e5e7eb;
 }
-
-body.dark::before { opacity: 0.02; }
 
 body.dark .header,
 body.dark .sidebar,
@@ -277,10 +319,6 @@ body.dark .modal-content {
   box-shadow: 0 12px 30px rgba(0,0,0,0.6);
 }
 
-body.dark h2,
-body.dark h1,
-body.dark .dark-mode-label span { color: #e5e7eb; }
-
 body.dark .block {
   background: #020617;
   border-color: #1e293b;
@@ -291,17 +329,42 @@ body.dark .block:hover {
   background: #1e293b;
 }
 
-body.dark button {
-  background: #020617;
+/* ------------------ DARK MODE BUTTON ------------------ */
+.theme-toggle {
+  width: 50px;
+  height: 50px;
+  margin-left: 20px;
+  border-radius: 50%;
+  border: 1px solid #dbe3ed;
+  background: #f1f5f9;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+}
+
+.theme-toggle i {
+  font-size: 22px;
+  transition: transform 0.5s ease, color 0.5s ease;
+}
+
+/* Анимация bounce + rotate при клике */
+.theme-toggle.active i {
+  animation: bounceRotate 0.5s ease forwards;
+}
+.dark-mode-label span {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+body.dark .dark-mode-label span {
   color: #e5e7eb;
-  border-color: #1e293b;
 }
 
-body.dark .theme-toggle i {
-  transform: rotate(360deg) scale(1.1);
-  color: #facc15; /* солнце */
-}
-
-body:not(.dark) .theme-toggle i {
-  color: #6366f1; /* луна */
+@keyframes bounceRotate {
+  0% { transform: scale(1) rotate(0deg); }
+  30% { transform: scale(1.2) rotate(20deg); }
+  50% { transform: scale(0.95) rotate(-10deg); }
+  70% { transform: scale(1.1) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
