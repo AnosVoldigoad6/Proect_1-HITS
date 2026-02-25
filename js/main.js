@@ -49,35 +49,35 @@ themeToggle.onclick = function () {
 };
 
 // --- CONSOLE ---
-const input = document.getElementById("consoleInput");
-const output = document.getElementById("consoleOutput");
+// const input = document.getElementById("consoleInput");
+// const output = document.getElementById("consoleOutput");
 
-input.onkeydown = function (e) {
-  if (e.key === "Enter") {
-    const value = input.value.trim();
-    if (value === "") return;
+// input.onkeydown = function (e) {
+//   if (e.key === "Enter") {
+//     const value = input.value.trim();
+//     if (value === "") return;
 
     // Команда clear
-    if (value.toLowerCase() === "clear") {
-      output.innerHTML = "";
-      input.value = "";
-      return;
-    }
+    // if (value.toLowerCase() === "clear") {
+    //   output.innerHTML = "";
+    //   input.value = "";
+    //   return;
+    // }
 
     // Добавляем введённую строку
-    const line = document.createElement("div");
-    line.innerHTML = `<span style="color:#22c55e">></span> ${value}`;
-    output.appendChild(line);
+    // const line = document.createElement("div");
+    // line.innerHTML = `<span style="color:#22c55e">></span> ${value}`;
+    // output.appendChild(line);
 
     // Пример ответа
-    const response = document.createElement("div");
-    response.textContent = "Output: " + value;
-    response.style.color = "#38bdf8";
-    output.appendChild(response);
+//     const response = document.createElement("div");
+//     response.textContent = "Output: " + value;
+//     response.style.color = "#38bdf8";
+//     output.appendChild(response);
 
-    input.value = "";
+//     input.value = "";
 
-    // Автоскролл вниз
-    output.scrollTop = output.scrollHeight;
-  }
-};
+//     // Автоскролл вниз
+//     output.scrollTop = output.scrollHeight;
+//   }
+// };
