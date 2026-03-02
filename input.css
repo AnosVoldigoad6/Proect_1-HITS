@@ -145,15 +145,20 @@ header,
 }
 
 /* Workspace */
+.workspace-wrapper {
+  background: linear-gradient(145deg, white, gray);
+  padding: 20px;
+  border-radius: 16px;
+  height: 500px;
+  overflow-y: auto;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+}
+
 .workspace {
-  flex: 1;
-  border-radius: 18px;
-  padding: 25px;
-  background: linear-gradient(to bottom, #ffffff, #f8fafc);
-  border: 1px solid #dbe3ed;
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.05),
-    0 2px 6px rgba(0,0,0,0.03);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* ------------------ BLOCKS ------------------ */
@@ -367,4 +372,168 @@ body.dark .dark-mode-label span {
   50% { transform: scale(0.95) rotate(-10deg); }
   70% { transform: scale(1.1) rotate(5deg); }
   100% { transform: scale(1) rotate(0deg); }
+}
+
+
+/* ---------------------- BLOCKS ---------------------- */
+.block {
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  cursor: grab;
+  font-weight: 500;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.block:hover {
+  transform: translateY(-3px);
+  background: #e2e8f0;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+/* ---------------------- WORKSPACE BLOCKS ---------------------- */
+.ws-block {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  font-weight: 600;
+  color: #ffffff;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+}
+
+.ws-block:active {
+  cursor: grabbing;
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+}
+
+/* Цвет блоков по типу */
+.ws-block[data-type="declare"] {
+  background: #4caf50;
+}
+
+.ws-block[data-type="assign"] {
+  background: #2196f3;
+}
+
+.ws-block[data-type="if"] {
+  background: #f59e0b;
+}
+
+.ws-block[data-type="while"] {
+  background: #8b5cf6;
+}
+
+/* Псевдо-пазики сверху и снизу */
+.ws-block::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  width: 40px;
+  height: 8px;
+  background: inherit;
+  border-radius: 6px;
+}
+
+.ws-block::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 20px;
+  width: 40px;
+  height: 8px;
+  background: inherit;
+  border-radius: 6px;
+}
+
+/* Inputs внутри блоков */
+.ws-block input {
+  border: none;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+  outline: none;
+  background: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+
+.ws-block input:focus {
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+}
+
+/* ---------------------- CONSOLE ---------------------- */
+.console {
+  height: 180px;
+  border-radius: 18px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25),
+    0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: Consolas, monospace;
+}
+
+.console-header {
+  padding: 10px 15px;
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.console-output {
+  flex: 1;
+  padding: 12px 15px;
+  overflow-y: auto;
+  color: #e2e8f0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.console-output div {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Цветная подсветка переменных */
+.console-output .variable-name {
+  color: #4fc3f7;
+  font-weight: 600;
+}
+
+.console-output .variable-value {
+  color: #ffd54f;
+  font-weight: 600;
+}
+
+.console-output::-webkit-scrollbar {
+  width: 6px;
+}
+
+.console-output::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }

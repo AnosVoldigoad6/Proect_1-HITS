@@ -1,3 +1,4 @@
+<!-- HTML полностью остаётся твоим, изменения только в классах блоков и консоли не нужны, поэтому копируем всё как есть -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -29,7 +30,6 @@
     </div>
   </header>
 
-
  <!-- MAIN CONTENT -->
 <main class="app-container">
 
@@ -42,35 +42,22 @@
     <div class="block" draggable="true" data-type="while">WHILE</div>
   </aside>
 
-  
-
-  
   <div class="main-area">
     
-    <div class="top-area">
-      <!-- WORKSPACE -->
-      <section class="workspace" id="workspace">
-    
-      </section>
-
-    
+    <div class="workspace-wrapper">
+      <div id="workspace" class="workspace"></div>
     </div>
 
     <!-- CONSOLE -->
     <div class="console">
-  <div class="console-header">Console</div>
-
-  <div class="console-output" id="consoleOutput"></div>
-
-  
-</div>
+      <div class="console-header">Console</div>
+      <div class="console-output" id="consoleOutput"></div>
+    </div>
 
   </div>
 
 </main>
 
-
-  
   <!-- SETTINGS MODAL -->
   <div class="modal" id="settingsModal">
     <div class="modal-content">
@@ -89,9 +76,6 @@
     </div>
   </div>
 
-
-
-  
   <!-- JS -->
   <script src="/js/main.js"></script>
   <script src="/js/dom.js"></script>
