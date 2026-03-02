@@ -1,117 +1,207 @@
-document.addEventListener("DOMContentLoaded", function () {
+ // --- MODAL ---
+const settingsBtn = document.getElementById("settingsBtn");
+const modal = document.getElementById("settingsModal");
+const closeModal = document.getElementById("closeModal");
 
-  // ================= MODAL =================
-  const settingsBtn = document.getElementById("settingsBtn");
-  const modal = document.getElementById("settingsModal");
-  const closeModal = document.getElementById("closeModal");
+settingsBtn.onclick = function () {
+  modal.classList.add("active");
+};
 
-  settingsBtn.addEventListener("click", function () {
-    modal.classList.add("active");
-  });
+closeModal.onclick = function () {
+  modal.classList.remove("active");
+};
 
-  closeModal.addEventListener("click", function () {
-    modal.classList.remove("active");
-  });
 
-  // Закрытие по клику вне окна
-  modal.addEventListener("click", function (e) {
-    if (e.target === modal) {
-      modal.classList.remove("active");
-    }
-  });
+ 
 
-  // ================= DARK MODE =================
-  const themeToggle = document.getElementById("themeToggle");
-  const icon = themeToggle.querySelector("i");
+// --- DARK MODE ---
+const themeToggle = document.getElementById("themeToggle");
+const icon = themeToggle.querySelector("i");
 
-  // Проверка сохранённой темы
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
+// Проверка сохранённой темы при загрузке
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark");
+  icon.classList.remove("fa-moon");
+  icon.classList.add("fa-sun");
+}
+
+// Переключение темы
+themeToggle.onclick = function () {
+  document.body.classList.toggle("dark");
+  const isDark = document.body.classList.contains("dark");
+
+  if (isDark) {
     icon.classList.remove("fa-moon");
     icon.classList.add("fa-sun");
+  } else {
+    icon.classList.remove("fa-sun");
+    icon.classList.add("fa-moon");
   }
 
-  themeToggle.addEventListener("click", function () {
-    document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
+  // Добавляем анимацию кнопке
+  themeToggle.classList.add("active");
+  setTimeout(function () {
+    themeToggle.classList.remove("active");
+  }, 500);
 
-    // Меняем иконку
-    if (isDark) {
-      icon.classList.remove("fa-moon");
-      icon.classList.add("fa-sun");
-    } else {
-      icon.classList.remove("fa-sun");
-      icon.classList.add("fa-moon");
-    }
+  // Сохраняем выбор
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+};
 
-    // Анимация
-    themeToggle.classList.add("active");
-    setTimeout(function () {
-      themeToggle.classList.remove("active");
-    }, 400);
+// --- CONSOLE ---
+// const input = document.getElementById("consoleInput");
+// const output = document.getElementById("consoleOutput");
 
-    localStorage.setItem("theme", isDark ? "dark" : "light");
+// input.onkeydown = function (e) {
+//   if (e.key === "Enter") {
+//     const value = input.value.trim();
+//     if (value === "") return;
+
+    // Команда clear
+    // if (value.toLowerCase() === "clear") {
+    //   output.innerHTML = "";
+    //   input.value = "";
+    //   return;
+    // }
+
+    // Добавляем введённую строку
+    // const line = document.createElement("div");
+    // line.innerHTML = `<span style="color:#22c55e">></span> ${value}`;
+    // output.appendChild(line);
+
+    // Пример ответа
+//     const response = document.createElement("div");
+//     response.textContent = "Output: " + value;
+//     response.style.color = "#38bdf8";
+//     output.appendChild(response);
+
+//     input.value = "";
+
+//     // Автоскролл вниз
+//     output.scrollTop = output.scrollHeight;
+//   }
+// };
+
+const blocks = document.querySelectorAll(".block");
+const workspace = document.getElementById("workspace");
+
+blocks.forEach(block => {
+  block.addEventListener("dragstart", e => {
+    // передаём тип блока
+    e.dataTransfer.setData("block-type", block.dataset.type);
   });
-
-  
-  // ================= DRAG & DROP =================
-  const blocks = document.querySelectorAll(".sidebar .block");
-  const workspace = document.querySelector(".workspace");
-  const resetBtn = document.getElementById("resetBtn");
-
-  blocks.forEach(block => {
-    block.addEventListener("dragstart", function (e) {
-      e.dataTransfer.setData("text/plain", block.textContent);
-    });
-  });
-
-  workspace.addEventListener("dragover", function (e) {
-    e.preventDefault();
-  });
-
-  workspace.addEventListener("drop", function (e) {
-    e.preventDefault();
-    const text = e.dataTransfer.getData("text/plain");
-
-    createWorkspaceBlock(text);
-    saveWorkspace();
-  });
-
-  function createWorkspaceBlock(text) {
-    const newBlock = document.createElement("div");
-    newBlock.classList.add("block");
-    newBlock.textContent = text;
-    workspace.appendChild(newBlock);
-  }
-
-  // ================= SAVE =================
-  function saveWorkspace() {
-    const workspaceBlocks = workspace.querySelectorAll(".block");
-    const data = [];
-
-    workspaceBlocks.forEach(block => {
-      data.push(block.textContent);
-    });
-
-    localStorage.setItem("workspaceBlocks", JSON.stringify(data));
-  }
-
-  function loadWorkspace() {
-    const data = JSON.parse(localStorage.getItem("workspaceBlocks"));
-
-    if (data) {
-      data.forEach(text => {
-        createWorkspaceBlock(text);
-      });
-    }
-  }
-
-  loadWorkspace();
-
-  // ================= RESET =================
-  resetBtn.addEventListener("click", function () {
-    workspace.innerHTML = "<h2>Workspace</h2>";
-    localStorage.removeItem("workspaceBlocks");
-  });
-
 });
+
+// разрешаем сброс
+workspace.addEventListener("dragover", e => {
+  e.preventDefault();
+});
+
+// обработка drop
+workspace.addEventListener("drop", e => {
+  e.preventDefault();
+
+  const type = e.dataTransfer.getData("block-type");
+  if (!type) return;
+
+  const block = createWorkspaceBlock(type);
+  workspace.appendChild(block);
+});
+
+function createWorkspaceBlock(type) {
+  const el = document.createElement("div");
+  el.className = "ws-block";
+  el.dataset.type = type;
+
+  el.innerHTML = renderBlockContent(type);
+
+  return el;
+}
+
+function renderBlockContent(type) {
+
+  if (type === "declare") {
+    return `
+      <span>var</span>
+      <input placeholder="x">
+    `;
+  }
+
+  if (type === "assign") {
+    return `
+      <input placeholder="x">
+      <span>=</span>
+      <input placeholder="5">
+    `;
+  }
+
+  if (type === "if") {
+    return `
+      <span>IF (</span>
+      <input placeholder="x > 0">
+      <span>)</span>
+    `;
+  }
+
+  if (type === "while") {
+    return `
+      <span>WHILE (</span>
+      <input placeholder="x < 10">
+      <span>)</span>
+    `;
+  }
+}
+
+function createWorkspaceBlock(type) {
+  const el = document.createElement("div");
+  el.className = "ws-block";
+  el.dataset.type = type;
+
+  el.innerHTML = renderBlockContent(type);
+
+  el.draggable = true;
+
+  return el;
+}
+
+let draggedBlock = null;
+
+// Когда начинаем тащить блок внутри workspace
+workspace.addEventListener("dragstart", e => {
+  if (e.target.classList.contains("ws-block")) {
+    draggedBlock = e.target;
+    e.dataTransfer.effectAllowed = "move";
+  }
+});
+
+
+
+// Пока тащим над workspace
+workspace.addEventListener("dragover", e => {
+  e.preventDefault();
+
+  const afterElement = getDragAfterElement(workspace, e.clientY);
+
+  if (afterElement == null) {
+    workspace.appendChild(draggedBlock);
+  } else {
+    workspace.insertBefore(draggedBlock, afterElement);
+  }
+});
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [
+    ...container.querySelectorAll(".ws-block:not(.dragging)")
+  ];
+
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
