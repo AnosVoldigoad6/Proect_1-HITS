@@ -1,83 +1,117 @@
-// --- MODAL ---
-const settingsBtn = document.getElementById("settingsBtn");
-const modal = document.getElementById("settingsModal");
-const closeModal = document.getElementById("closeModal");
+document.addEventListener("DOMContentLoaded", function () {
 
-settingsBtn.onclick = function () {
-  modal.classList.add("active");
-};
+  // ================= MODAL =================
+  const settingsBtn = document.getElementById("settingsBtn");
+  const modal = document.getElementById("settingsModal");
+  const closeModal = document.getElementById("closeModal");
 
-closeModal.onclick = function () {
-  modal.classList.remove("active");
-};
+  settingsBtn.addEventListener("click", function () {
+    modal.classList.add("active");
+  });
 
+  closeModal.addEventListener("click", function () {
+    modal.classList.remove("active");
+  });
 
- 
+  // Закрытие по клику вне окна
+  modal.addEventListener("click", function (e) {
+    if (e.target === modal) {
+      modal.classList.remove("active");
+    }
+  });
 
-// --- DARK MODE ---
-const themeToggle = document.getElementById("themeToggle");
-const icon = themeToggle.querySelector("i");
+  // ================= DARK MODE =================
+  const themeToggle = document.getElementById("themeToggle");
+  const icon = themeToggle.querySelector("i");
 
-// Проверка сохранённой темы при загрузке
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-  icon.classList.remove("fa-moon");
-  icon.classList.add("fa-sun");
-}
-
-// Переключение темы
-themeToggle.onclick = function () {
-  document.body.classList.toggle("dark");
-  const isDark = document.body.classList.contains("dark");
-
-  if (isDark) {
+  // Проверка сохранённой темы
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
     icon.classList.remove("fa-moon");
     icon.classList.add("fa-sun");
-  } else {
-    icon.classList.remove("fa-sun");
-    icon.classList.add("fa-moon");
   }
 
-  // Добавляем анимацию кнопке
-  themeToggle.classList.add("active");
-  setTimeout(function () {
-    themeToggle.classList.remove("active");
-  }, 500);
+  themeToggle.addEventListener("click", function () {
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
 
-  // Сохраняем выбор
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-};
+    // Меняем иконку
+    if (isDark) {
+      icon.classList.remove("fa-moon");
+      icon.classList.add("fa-sun");
+    } else {
+      icon.classList.remove("fa-sun");
+      icon.classList.add("fa-moon");
+    }
 
-// --- CONSOLE ---
-// const input = document.getElementById("consoleInput");
-// const output = document.getElementById("consoleOutput");
+    // Анимация
+    themeToggle.classList.add("active");
+    setTimeout(function () {
+      themeToggle.classList.remove("active");
+    }, 400);
 
-// input.onkeydown = function (e) {
-//   if (e.key === "Enter") {
-//     const value = input.value.trim();
-//     if (value === "") return;
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  });
 
-    // Команда clear
-    // if (value.toLowerCase() === "clear") {
-    //   output.innerHTML = "";
-    //   input.value = "";
-    //   return;
-    // }
+  
+  // ================= DRAG & DROP =================
+  const blocks = document.querySelectorAll(".sidebar .block");
+  const workspace = document.querySelector(".workspace");
+  const resetBtn = document.getElementById("resetBtn");
 
-    // Добавляем введённую строку
-    // const line = document.createElement("div");
-    // line.innerHTML = `<span style="color:#22c55e">></span> ${value}`;
-    // output.appendChild(line);
+  blocks.forEach(block => {
+    block.addEventListener("dragstart", function (e) {
+      e.dataTransfer.setData("text/plain", block.textContent);
+    });
+  });
 
-    // Пример ответа
-//     const response = document.createElement("div");
-//     response.textContent = "Output: " + value;
-//     response.style.color = "#38bdf8";
-//     output.appendChild(response);
+  workspace.addEventListener("dragover", function (e) {
+    e.preventDefault();
+  });
 
-//     input.value = "";
+  workspace.addEventListener("drop", function (e) {
+    e.preventDefault();
+    const text = e.dataTransfer.getData("text/plain");
 
-//     // Автоскролл вниз
-//     output.scrollTop = output.scrollHeight;
-//   }
-// };
+    createWorkspaceBlock(text);
+    saveWorkspace();
+  });
+
+  function createWorkspaceBlock(text) {
+    const newBlock = document.createElement("div");
+    newBlock.classList.add("block");
+    newBlock.textContent = text;
+    workspace.appendChild(newBlock);
+  }
+
+  // ================= SAVE =================
+  function saveWorkspace() {
+    const workspaceBlocks = workspace.querySelectorAll(".block");
+    const data = [];
+
+    workspaceBlocks.forEach(block => {
+      data.push(block.textContent);
+    });
+
+    localStorage.setItem("workspaceBlocks", JSON.stringify(data));
+  }
+
+  function loadWorkspace() {
+    const data = JSON.parse(localStorage.getItem("workspaceBlocks"));
+
+    if (data) {
+      data.forEach(text => {
+        createWorkspaceBlock(text);
+      });
+    }
+  }
+
+  loadWorkspace();
+
+  // ================= RESET =================
+  resetBtn.addEventListener("click", function () {
+    workspace.innerHTML = "<h2>Workspace</h2>";
+    localStorage.removeItem("workspaceBlocks");
+  });
+
+});
