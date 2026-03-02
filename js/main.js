@@ -1,86 +1,5 @@
- // --- MODAL ---
-const settingsBtn = document.getElementById("settingsBtn");
-const modal = document.getElementById("settingsModal");
-const closeModal = document.getElementById("closeModal");
-
-settingsBtn.onclick = function () {
-  modal.classList.add("active");
-};
-
-closeModal.onclick = function () {
-  modal.classList.remove("active");
-};
 
 
- 
-
-// --- DARK MODE ---
-const themeToggle = document.getElementById("themeToggle");
-const icon = themeToggle.querySelector("i");
-
-// Проверка сохранённой темы при загрузке
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-  icon.classList.remove("fa-moon");
-  icon.classList.add("fa-sun");
-}
-
-// Переключение темы
-themeToggle.onclick = function () {
-  document.body.classList.toggle("dark");
-  const isDark = document.body.classList.contains("dark");
-
-  if (isDark) {
-    icon.classList.remove("fa-moon");
-    icon.classList.add("fa-sun");
-  } else {
-    icon.classList.remove("fa-sun");
-    icon.classList.add("fa-moon");
-  }
-
-  // Добавляем анимацию кнопке
-  themeToggle.classList.add("active");
-  setTimeout(function () {
-    themeToggle.classList.remove("active");
-  }, 500);
-
-  // Сохраняем выбор
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-};
-
-// --- CONSOLE ---
-// const input = document.getElementById("consoleInput");
-// const output = document.getElementById("consoleOutput");
-
-// input.onkeydown = function (e) {
-//   if (e.key === "Enter") {
-//     const value = input.value.trim();
-//     if (value === "") return;
-
-    // Команда clear
-    // if (value.toLowerCase() === "clear") {
-    //   output.innerHTML = "";
-    //   input.value = "";
-    //   return;
-    // }
-
-    // Добавляем введённую строку
-    // const line = document.createElement("div");
-    // line.innerHTML = `<span style="color:#22c55e">></span> ${value}`;
-    // output.appendChild(line);
-
-    // Пример ответа
-//     const response = document.createElement("div");
-//     response.textContent = "Output: " + value;
-//     response.style.color = "#38bdf8";
-//     output.appendChild(response);
-
-//     input.value = "";
-
-//     // Автоскролл вниз
-//     output.scrollTop = output.scrollHeight;
-//   }
-// };
 
 const blocks = document.querySelectorAll(".block");
 const workspace = document.getElementById("workspace");
@@ -122,7 +41,7 @@ function renderBlockContent(type) {
 
   if (type === "declare") {
     return `
-      <span>var</span>
+      <span >var</span>
       <input placeholder="x">
     `;
   }
@@ -204,4 +123,90 @@ function getDragAfterElement(container, y) {
       return closest;
     }
   }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+
+let runBtn =document.getElementById("runBtn")
+
+let memory = {};
+
+document.getElementById("runBtn").addEventListener("click", executeProgram);
+
+
+function executeProgram(){
+
+  memory = {};
+
+  const blocks = workspace.querySelectorAll(".ws-block")
+
+  blocks.forEach(block =>{
+    const type = block.dataset.type;
+
+    if (type === "declare"){
+      handleDeclare(block)
+    }
+
+    if (type === "assign"){
+      handleAssign(block)
+    }
+
+
+  })
+
+  console.log("Memory: ", memory)
+}
+
+
+function handleDeclare(block){
+
+  const inp = block.querySelector("input")
+  if(!inp) return;
+
+  const val = inp.value;
+  if(!val) return;
+  
+  const names = val.split(",");
+
+  names.forEach((name)=>{
+    const clearName = name.trim();
+    if(clearName){
+      memory[clearName] = 0;
+    }
+  })
+
+}
+
+function handleAssign(block) {
+
+  const inputs = block.querySelectorAll("input");
+
+  const variableName = inputs[0].value.trim();
+  const expression = inputs[1].value.trim();
+
+  if (!memory.hasOwnProperty(variableName)) {
+    alert("Переменная не объявлена: " + variableName);
+    return;
+  }
+
+  const result = evaluateExpression(expression);
+
+  memory[variableName] = result;
+}
+
+
+function evaluateExpression(expression) {
+
+  // заменяем переменные на их значения
+  Object.keys(memory).forEach(name => {
+    const value = memory[name];
+    const regex = new RegExp("\\b" + name + "\\b", "g");
+    expression = expression.replace(regex, value);
+  });
+
+  try {
+    return Math.floor(eval(expression));
+  } catch (e) {
+    alert("Ошибка в выражении: " + expression);
+    return 0;
+  }
 }
