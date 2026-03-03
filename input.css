@@ -1,4 +1,3 @@
-/* ---------------------- GLOBAL ---------------------- */
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +15,6 @@ body {
   position: relative;
 }
 
-/* Watermark */
 body::before {
   content: "";
   position: fixed;
@@ -34,7 +32,6 @@ header,
   z-index: 1;
 }
 
-/* ------------------ HEADER ------------------ */
 .header {
   height: 70px;
   padding: 0 40px;
@@ -84,7 +81,6 @@ header,
 }
 
 .controls button:hover {
-  /* transform: translateY(-2px); */
   box-shadow: 0 10px 22px rgba(0,0,0,0.1);
 }
 
@@ -105,7 +101,6 @@ header,
   border: 1px solid #dbe3ed;
 }
 
-/* ------------------ MAIN LAYOUT ------------------ */
 .app-container {
   flex: 1;
   display: flex;
@@ -114,7 +109,6 @@ header,
   overflow: hidden;
 }
 
-/* Sidebar (Blocks) */
 .sidebar {
   width: 240px;
   height: 100%;
@@ -129,7 +123,6 @@ header,
   flex-direction: column;
 }
 
-/* Правая часть */
 .main-area {
   flex: 1;
   display: flex;
@@ -137,14 +130,12 @@ header,
   gap: 25px;
 }
 
-/* Верх (workspace + memory) */
 .top-area {
   flex: 1;
   display: flex;
   gap: 25px;
 }
 
-/* Workspace */
 .workspace-wrapper {
   background: linear-gradient(145deg, white, gray);
   padding: 20px;
@@ -161,7 +152,6 @@ header,
   gap: 12px;
 }
 
-/* ------------------ BLOCKS ------------------ */
 .block {
   padding: 12px;
   margin-bottom: 14px;
@@ -179,7 +169,6 @@ header,
   box-shadow: 0 12px 24px rgba(0,0,0,0.1);
 }
 
-/* ------------------ CONSOLE ------------------ */
 .console {
   height: 180px;
   border-radius: 18px;
@@ -254,7 +243,6 @@ header,
   animation: blink 1s step-start infinite;
 }
 
-/* ------------------ MODAL ------------------ */
 .modal {
   position: fixed;
   inset: 0;
@@ -307,7 +295,6 @@ header,
   font-size: 22px;
 }
 
-/* ------------------ DARK MODE ------------------ */
 body.dark {
   background: #0f172a;
   color: #e5e7eb;
@@ -334,7 +321,6 @@ body.dark .block:hover {
   background: #1e293b;
 }
 
-/* ------------------ DARK MODE BUTTON ------------------ */
 .theme-toggle {
   width: 50px;
   height: 50px;
@@ -352,7 +338,6 @@ body.dark .block:hover {
   transition: transform 0.5s ease, color 0.5s ease;
 }
 
-/* Анимация bounce + rotate при клике */
 .theme-toggle.active i {
   animation: bounceRotate 0.5s ease forwards;
 }
@@ -375,7 +360,6 @@ body.dark .dark-mode-label span {
 }
 
 
-/* ---------------------- BLOCKS ---------------------- */
 .block {
   padding: 12px 16px;
   margin-bottom: 14px;
@@ -410,7 +394,6 @@ body.dark .dark-mode-label span {
   gap: 8px;
 }
 
-/* ---------------------- WORKSPACE BLOCKS ---------------------- */
 .ws-block {
   position: relative;
   padding: 14px 18px;
@@ -434,7 +417,6 @@ body.dark .dark-mode-label span {
   box-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
 
-/* Цвет блоков по типу */
 .ws-block[data-type="declare"] {
   background: #4caf50;
 }
@@ -451,7 +433,6 @@ body.dark .dark-mode-label span {
   background: #8b5cf6;
 }
 
-/* Псевдо-пазики сверху и снизу */
 .ws-block::before {
   content: "";
   position: absolute;
@@ -474,7 +455,6 @@ body.dark .dark-mode-label span {
   border-radius: 6px;
 }
 
-/* Inputs внутри блоков */
 .ws-block input {
   border: none;
   border-radius: 8px;
@@ -489,7 +469,6 @@ body.dark .dark-mode-label span {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
 }
 
-/* ---------------------- CONSOLE ---------------------- */
 .console {
   height: 180px;
   border-radius: 18px;
@@ -527,7 +506,6 @@ body.dark .dark-mode-label span {
   animation: fadeIn 0.3s ease;
 }
 
-/* Цветная подсветка переменных */
 .console-output .variable-name {
   color: #4fc3f7;
   font-weight: 600;
