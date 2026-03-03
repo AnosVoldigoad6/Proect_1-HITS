@@ -33,11 +33,34 @@ workspace.addEventListener("drop", e => {
 
 // Создание блока в рабочей области
 function createWorkspaceBlock(type) {
+
   const el = document.createElement("div");
   el.className = "ws-block";
   el.dataset.type = type;
   el.innerHTML = renderBlockContent(type);
-  el.draggable = true;
+
+  const inner = el.querySelector(".inner-blocks");
+
+  if (inner) {
+
+    // разрешаем drop
+    inner.addEventListener("dragover", e => {
+      e.preventDefault();   // ОБЯЗАТЕЛЬНО
+    });
+
+    // создаём вложенный блок
+    inner.addEventListener("drop", e => {
+      e.preventDefault();
+      e.stopPropagation();  // останавливаем только тут
+
+      const type = e.dataTransfer.getData("block-type");
+      if (!type) return;
+
+      const newBlock = createWorkspaceBlock(type);
+      inner.appendChild(newBlock);
+    });
+  }
+
   return el;
 }
 
@@ -45,14 +68,69 @@ function createWorkspaceBlock(type) {
 function renderBlockContent(type) {
 
   if (type === "declare") {
-    return `<span>var</span> <input placeholder="x, y">`;
+    return `
+      <span>var</span>
+      <input placeholder="x, y">`;
   }
 
-  if (type === "assign") {
-    return `<input placeholder="x"> <span>=</span> <input placeholder="5 + 3">`;
+  else if (type === "assign") {
+    return `
+      <input placeholder="x">
+      <span>=</span>
+      <input placeholder="5 + 3">`;
   }
 
-  return "";
+  else if (type === "if") {
+    return `
+      <div class="condition">
+        <input placeholder="x + 5">
+        <select>
+          <option value=">">></option>
+          <option value="<"><</option>
+          <option value="==">=</option>
+          <option value="!=">!=</option>
+          <option value=">=">>=</option>
+          <option value="<="><=</option>
+        </select>
+        <input placeholder="10">
+      </div>
+      <div class="inner-blocks"></div>`;
+  }
+
+  else if (type === "while") {
+    return `
+      <div class="condition">
+        <input placeholder="x">
+        <select>
+          <option value=">">></option>
+          <option value="<"><</option>
+          <option value="==">=</option>
+          <option value="!=">!=</option>
+          <option value=">=">>=</option>
+          <option value="<="><=</option>
+        </select>
+        <input placeholder="0">
+      </div>
+      <div class="inner-blocks"></div>`;
+  }
+
+  return ;
+}
+
+function evaluateCondition(leftExpr, operator, rightExpr) {
+
+  const left = evaluateExpression(leftExpr);
+  const right = evaluateExpression(rightExpr);
+
+  switch (operator) {
+    case ">": return left > right;
+    case "<": return left < right;
+    case "==": return left === right;
+    case "!=": return left !== right;
+    case ">=": return left >= right;
+    case "<=": return left <= right;
+    default: return false;
+  }
 }
 
 
@@ -96,30 +174,29 @@ function executeProgram() {
 /**
  * Преобразует DOM-блоки в абстрактное синтаксическое дерево
  */
-function buildAST() {
+function buildAST(container = workspace) {
 
-  const blocks = workspace.querySelectorAll(".ws-block");
+  const blocks = container.children;
   const ast = [];
 
-  blocks.forEach(block => {
+  Array.from(blocks).forEach(block => {
 
     const type = block.dataset.type;
 
-    // Узел объявления переменных
+    // DECLARE
     if (type === "declare") {
       const input = block.querySelector("input");
-      const names = input.value
-        .split(",")
-        .map(n => n.trim())
-        .filter(n => n);
 
       ast.push({
         type: "declare",
-        variables: names
+        variables: input.value
+          .split(",")
+          .map(n => n.trim())
+          .filter(n => n)
       });
     }
 
-    // Узел присваивания
+    // ASSIGN
     if (type === "assign") {
       const inputs = block.querySelectorAll("input");
 
@@ -127,6 +204,36 @@ function buildAST() {
         type: "assign",
         variable: inputs[0].value.trim(),
         expression: inputs[1].value.trim()
+      });
+    }
+
+    // IF
+    if (type === "if") {
+
+      const inputs = block.querySelectorAll(".condition input");
+      const operator = block.querySelector("select").value;
+
+      ast.push({
+        type: "if",
+        left: inputs[0].value.trim(),
+        operator,
+        right: inputs[1].value.trim(),
+        body: buildAST(block.querySelector(".inner-blocks"))
+      });
+    }
+
+    // WHILE
+    if (type === "while") {
+
+      const inputs = block.querySelectorAll(".condition input");
+      const operator = block.querySelector("select").value;
+
+      ast.push({
+        type: "while",
+        left: inputs[0].value.trim(),
+        operator,
+        right: inputs[1].value.trim(),
+        body: buildAST(block.querySelector(".inner-blocks"))
       });
     }
 
@@ -147,7 +254,6 @@ function executeAST(ast) {
 
   ast.forEach(node => {
 
-    // Объявление переменных
     if (node.type === "declare") {
       node.variables.forEach(name => {
         if (!memory.hasOwnProperty(name)) {
@@ -156,7 +262,6 @@ function executeAST(ast) {
       });
     }
 
-    // Присваивание
     if (node.type === "assign") {
 
       if (!memory.hasOwnProperty(node.variable)) {
@@ -164,8 +269,31 @@ function executeAST(ast) {
         return;
       }
 
-      const value = evaluateExpression(node.expression);
-      memory[node.variable] = value;
+      memory[node.variable] =
+        evaluateExpression(node.expression);
+    }
+
+    if (node.type === "if") {
+
+      if (evaluateCondition(node.left, node.operator, node.right)) {
+        executeAST(node.body);
+      }
+    }
+
+    if (node.type === "while") {
+
+      let safety = 0;
+
+      while (evaluateCondition(node.left, node.operator, node.right)) {
+
+        executeAST(node.body);
+
+        safety++;
+        if (safety > 1000) {
+          printError("Бесконечный цикл остановлен");
+          break;
+        }
+      }
     }
 
   });
