@@ -1,6 +1,4 @@
-/************************************************************
- *                 1. DRAG & DROP ЛОГИКА
- ************************************************************/
+// 1. DRAG & DROP ЛОГИКА
 
 // Блоки в палитре
 const blocks = document.querySelectorAll(".block");
@@ -43,15 +41,13 @@ function createWorkspaceBlock(type) {
 
   if (inner) {
 
-    // разрешаем drop
     inner.addEventListener("dragover", e => {
-      e.preventDefault();   // ОБЯЗАТЕЛЬНО
+      e.preventDefault();
     });
 
-    // создаём вложенный блок
     inner.addEventListener("drop", e => {
       e.preventDefault();
-      e.stopPropagation();  // останавливаем только тут
+      e.stopPropagation();
 
       const type = e.dataTransfer.getData("block-type");
       if (!type) return;
@@ -114,7 +110,7 @@ function renderBlockContent(type) {
       <div class="inner-blocks"></div>`;
   }
 
-  return ;
+  return;
 }
 
 function evaluateCondition(leftExpr, operator, rightExpr) {
@@ -133,28 +129,14 @@ function evaluateCondition(leftExpr, operator, rightExpr) {
   }
 }
 
+// 2. ПАМЯТЬ ПРОГРАММЫ
 
-/************************************************************
- *                2. ПАМЯТЬ ПРОГРАММЫ
- ************************************************************/
-
-// Хранилище переменных
 let memory = {};
 
-
-/************************************************************
- *                3. ЗАПУСК ПРОГРАММЫ
- ************************************************************/
+// 3. ЗАПУСК ПРОГРАММЫ
 
 document.getElementById("runBtn").addEventListener("click", executeProgram);
 
-/**
- * Главная функция:
- * 1. Очищает память
- * 2. Строит AST
- * 3. Выполняет AST
- * 4. Выводит результат
- */
 function executeProgram() {
   memory = {};
   clearConsole();
@@ -166,14 +148,8 @@ function executeProgram() {
   console.log("Memory: ", memory);
 }
 
+// 4. ПОСТРОЕНИЕ AST
 
-/************************************************************
- *                4. ПОСТРОЕНИЕ AST
- ************************************************************/
-
-/**
- * Преобразует DOM-блоки в абстрактное синтаксическое дерево
- */
 function buildAST(container = workspace) {
 
   const blocks = container.children;
@@ -183,7 +159,6 @@ function buildAST(container = workspace) {
 
     const type = block.dataset.type;
 
-    // DECLARE
     if (type === "declare") {
       const input = block.querySelector("input");
 
@@ -196,7 +171,6 @@ function buildAST(container = workspace) {
       });
     }
 
-    // ASSIGN
     if (type === "assign") {
       const inputs = block.querySelectorAll("input");
 
@@ -207,7 +181,6 @@ function buildAST(container = workspace) {
       });
     }
 
-    // IF
     if (type === "if") {
 
       const inputs = block.querySelectorAll(".condition input");
@@ -222,7 +195,6 @@ function buildAST(container = workspace) {
       });
     }
 
-    // WHILE
     if (type === "while") {
 
       const inputs = block.querySelectorAll(".condition input");
@@ -242,14 +214,8 @@ function buildAST(container = workspace) {
   return ast;
 }
 
+// 5. ИНТЕРПРЕТАЦИЯ AST
 
-/************************************************************
- *                5. ИНТЕРПРЕТАЦИЯ AST
- ************************************************************/
-
-/**
- * Выполняет каждый узел дерева
- */
 function executeAST(ast) {
 
   ast.forEach(node => {
@@ -299,23 +265,13 @@ function executeAST(ast) {
   });
 }
 
+// 6. ПАРСЕР ВЫРАЖЕНИЙ
 
-/************************************************************
- *          6. СОБСТВЕННЫЙ ПАРСЕР ВЫРАЖЕНИЙ
- ************************************************************/
-
-/**
- * Разбивает выражение на токены
- */
 function tokenize(expression) {
   const regex = /\d+|[a-zA-Z]+|[()+\-*/%]/g;
   return expression.match(regex) || [];
 }
 
-/**
- * Преобразует выражение в обратную польскую запись (RPN)
- * Используется алгоритм сортировочной станции
- */
 function toRPN(tokens) {
 
   const output = [];
@@ -367,9 +323,6 @@ function toRPN(tokens) {
   return output;
 }
 
-/**
- * Вычисляет выражение в RPN
- */
 function evaluateRPN(rpn) {
 
   const stack = [];
@@ -408,9 +361,6 @@ function evaluateRPN(rpn) {
   return stack.pop();
 }
 
-/**
- * Главная функция вычисления выражения
- */
 function evaluateExpression(expression) {
 
   try {
@@ -423,10 +373,7 @@ function evaluateExpression(expression) {
   }
 }
 
-
-/************************************************************
- *                7. КОНСОЛЬ
- ************************************************************/
+// 7. КОНСОЛЬ
 
 function clearConsole() {
   document.getElementById("consoleOutput").innerHTML = "";
