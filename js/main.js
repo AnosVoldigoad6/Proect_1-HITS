@@ -1,408 +1,326 @@
-// 1. DRAG & DROP ЛОГИКА
+// MAIN 
 
-// Блоки в палитре
-const blocks = document.querySelectorAll(".block");
+import { buildAST, executeProgram } from "./interpreter.js";
+import { Memory }                   from "./nodes.js";
 
-// Рабочая область
-const workspace = document.getElementById("workspace");
+// DOM
 
-// Передаём тип блока при начале перетаскивания
-blocks.forEach(block => {
-  block.addEventListener("dragstart", e => {
-    e.dataTransfer.setData("block-type", block.dataset.type);
-  });
+const workspace     = document.getElementById("workspace");
+const trashBtn      = document.getElementById("trashBtn");
+const runBtn        = document.getElementById("runBtn");
+const resetBtn      = document.getElementById("resetBtn");
+const consoleOutput = document.getElementById("consoleOutput");
+const settingsBtn   = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeModal    = document.getElementById("closeModal");
+const themeToggle   = document.getElementById("themeToggle");
+
+// СОСТОЯНИЕ 
+
+let draggedBlock = null;
+
+const dropPlaceholder = document.createElement("div");
+dropPlaceholder.className = "drop-placeholder";
+
+// КОНСОЛЬ 
+
+function clearConsole() {
+  consoleOutput.innerHTML = "";
+}
+
+function renderMemory(memory) {
+  if (memory.vars.size === 0 && memory.arrays.size === 0) {
+    consoleOutput.innerHTML = "<div>No variables</div>";
+    return;
+  }
+
+  for (const [name, value] of memory.vars) {
+    const line = document.createElement("div");
+    line.innerHTML = `
+      <span class="variable-name">${name}</span>
+      <span> = </span>
+      <span class="variable-value">${value}</span>`;
+    consoleOutput.appendChild(line);
+  }
+
+  for (const [name, arr] of memory.arrays) {
+    const line = document.createElement("div");
+    line.innerHTML = `
+      <span class="variable-name">${name}</span>
+      <span> = </span>
+      <span class="variable-value">[${arr.join(", ")}]</span>`;
+    consoleOutput.appendChild(line);
+  }
+}
+
+function printError(message) {
+  const line = document.createElement("div");
+  line.className   = "console-error";
+  line.textContent = "Error: " + message;
+  consoleOutput.appendChild(line);
+}
+
+// МОДАЛКА / ТЕМА 
+
+settingsBtn.addEventListener("click", () => settingsModal.classList.add("active"));
+closeModal.addEventListener("click",  () => settingsModal.classList.remove("active"));
+settingsModal.addEventListener("click", e => {
+  if (e.target === settingsModal) settingsModal.classList.remove("active");
 });
 
-// Разрешаем drop в workspace
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  themeToggle.classList.add("active");
+  const icon = themeToggle.querySelector("i");
+  icon.className = document.body.classList.contains("dark")
+    ? "fa-solid fa-sun"
+    : "fa-solid fa-moon";
+  setTimeout(() => themeToggle.classList.remove("active"), 500);
+});
+
+// ЗАПУСК / СБРОС 
+
+runBtn.addEventListener("click", () => {
+  clearConsole();
+  const memory = new Memory();
+
+  try {
+    const { ast } = buildAST(workspace);
+    executeProgram(ast, memory, printError);
+    renderMemory(memory);
+  } catch (e) {
+    printError(e.message);
+  }
+});
+
+resetBtn.addEventListener("click", () => {
+  workspace.innerHTML = "";
+  clearConsole();
+});
+
+// ПАЛИТРА 
+
+for (const item of document.querySelectorAll(".block")) {
+  item.addEventListener("dragstart", e => {
+    draggedBlock = null;
+    e.dataTransfer.setData("block-type", item.dataset.type);
+  });
+}
+
+// WORKSPACE drag
+
 workspace.addEventListener("dragover", e => {
   e.preventDefault();
+  const target = getDropTarget(e.clientY, workspace);
+  target
+    ? workspace.insertBefore(dropPlaceholder, target)
+    : workspace.appendChild(dropPlaceholder);
 });
 
-// Создание блока при drop
+workspace.addEventListener("dragleave", e => {
+  if (!workspace.contains(e.relatedTarget)) dropPlaceholder.remove();
+});
+
 workspace.addEventListener("drop", e => {
   e.preventDefault();
+  dropPlaceholder.remove();
+
+  if (draggedBlock !== null) {
+    const target = getDropTarget(e.clientY, workspace);
+    if (!draggedBlock.contains(target)) {
+      target
+        ? workspace.insertBefore(draggedBlock, target)
+        : workspace.appendChild(draggedBlock);
+    }
+    return;
+  }
 
   const type = e.dataTransfer.getData("block-type");
   if (!type) return;
-
-  const block = createWorkspaceBlock(type);
-  workspace.appendChild(block);
+  workspace.appendChild(createWorkspaceBlock(type));
 });
 
-// Создание блока в рабочей области
+// КОРЗИНА
+
+trashBtn.addEventListener("dragover", e => {
+  e.preventDefault();
+  trashBtn.classList.add("trash-active");
+});
+
+trashBtn.addEventListener("dragleave", () => {
+  trashBtn.classList.remove("trash-active");
+});
+
+trashBtn.addEventListener("drop", e => {
+  e.preventDefault();
+  trashBtn.classList.remove("trash-active");
+  dropPlaceholder.remove();
+  if (draggedBlock !== null) {
+    draggedBlock.remove();
+    draggedBlock = null;
+  }
+});
+
+// HELPERS
+
+function getDropTarget(clientY, container) {
+  const children = [...container.children].filter(
+    el => el !== dropPlaceholder && el !== draggedBlock
+  );
+  for (const child of children) {
+    const { top, height } = child.getBoundingClientRect();
+    if (clientY < top + height / 2) return child;
+  }
+  return null;
+}
+
+function bindInner(inner) {
+  inner.addEventListener("dragover", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = getDropTarget(e.clientY, inner);
+    target
+      ? inner.insertBefore(dropPlaceholder, target)
+      : inner.appendChild(dropPlaceholder);
+  });
+
+  inner.addEventListener("dragleave", e => {
+    if (!inner.contains(e.relatedTarget)) dropPlaceholder.remove();
+  });
+
+  inner.addEventListener("drop", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropPlaceholder.remove();
+
+    if (draggedBlock !== null) {
+      if (draggedBlock.contains(inner)) return;
+      const target = getDropTarget(e.clientY, inner);
+      target
+        ? inner.insertBefore(draggedBlock, target)
+        : inner.appendChild(draggedBlock);
+      return;
+    }
+
+    const blockType = e.dataTransfer.getData("block-type");
+    if (!blockType) return;
+    inner.appendChild(createWorkspaceBlock(blockType));
+  });
+}
+
+// СОЗДАНИЕ БЛОКА
+
 function createWorkspaceBlock(type) {
-
   const el = document.createElement("div");
-  el.className = "ws-block";
+  el.className    = "ws-block";
   el.dataset.type = type;
-  el.innerHTML = renderBlockContent(type);
+  el.draggable    = true;
+  el.innerHTML    = renderBlockContent(type);
 
-  const inner = el.querySelector(".inner-blocks");
+  el.addEventListener("dragstart", e => {
+    e.stopPropagation();
+    draggedBlock = el;
+    e.dataTransfer.setData("block-type", "");
+    setTimeout(() => el.classList.add("dragging"), 0);
+  });
 
-  if (inner) {
+  el.addEventListener("dragend", () => {
+    el.classList.remove("dragging");
+    draggedBlock = null;
+    dropPlaceholder.remove();
+    trashBtn.classList.remove("trash-active");
+  });
 
-    inner.addEventListener("dragover", e => {
-      e.preventDefault();
-    });
-
-    inner.addEventListener("drop", e => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const type = e.dataTransfer.getData("block-type");
-      if (!type) return;
-
-      const newBlock = createWorkspaceBlock(type);
-      inner.appendChild(newBlock);
-    });
+  for (const inner of el.querySelectorAll(".inner-blocks, .inner-true, .inner-false")) {
+    bindInner(inner);
   }
 
   return el;
 }
 
-// Визуальное содержимое блоков
+// ШАБЛОНЫ БЛОКОВ
+
+const CMP_SELECT = `
+  <select>
+    <option value=">">></option>
+    <option value="<">&lt;</option>
+    <option value="==">=</option>
+    <option value="!=">!=</option>
+    <option value=">=">>=</option>
+    <option value="<="><=</option>
+  </select>`;
+
 function renderBlockContent(type) {
+  switch (type) {
 
-  if (type === "declare") {
-    return `
-      <span>var</span>
-      <input placeholder="x, y">`;
+    case "declare":
+      return `
+        <span class="block-label">var</span>
+        <input type="text" placeholder="x, y, z">`;
+
+    case "declareArray":
+      return `
+        <span class="block-label">array</span>
+        <input type="text" placeholder="arr">
+        <span class="block-label">[</span>
+        <input type="text" placeholder="10">
+        <span class="block-label">]</span>`;
+
+    case "assign":
+      return `
+        <input type="text" placeholder="x">
+        <span class="block-label">=</span>
+        <input type="text" placeholder="x + 1">`;
+
+    case "assignArray":
+      return `
+        <input type="text" placeholder="arr">
+        <span class="block-label">[</span>
+        <input type="text" placeholder="i">
+        <span class="block-label">]</span>
+        <span class="block-label">=</span>
+        <input type="text" placeholder="arr[i] + 1">`;
+
+    case "if":
+      return `
+        <div class="block-row">
+          <span class="block-label">if</span>
+          <input class="cond-input wide" type="text" placeholder="x > 0 AND y != 0">
+        </div>
+        <div class="block-section">
+          <span class="section-label">then</span>
+          <div class="inner-blocks inner-true"></div>
+        </div>
+        <div class="block-section">
+          <span class="section-label">else</span>
+          <div class="inner-blocks inner-false"></div>
+        </div>`;
+
+    case "while":
+      return `
+        <div class="block-row">
+          <span class="block-label">while</span>
+          <input class="cond-input wide" type="text" placeholder="i < 10">
+        </div>
+        <div class="inner-blocks"></div>`;
+
+    case "for":
+      return `
+        <div class="block-row for-row">
+          <span class="block-label">for</span>
+          <input type="text" placeholder="i" class="for-var">
+          <span class="block-label">=</span>
+          <input type="text" placeholder="0">
+          <span class="block-label">;</span>
+          <input class="cond-input" type="text" placeholder="i < 10">
+          <span class="block-label">;</span>
+          <input type="text" placeholder="i">
+          <span class="block-label">=</span>
+          <input type="text" placeholder="i + 1">
+        </div>
+        <div class="inner-blocks"></div>`;
+
+    default:
+      return "";
   }
-
-  else if (type === "assign") {
-    return `
-      <input placeholder="x">
-      <span>=</span>
-      <input placeholder="5 + 3">`;
-  }
-
-  else if (type === "if") {
-    return `
-      <div class="condition">
-        <input placeholder="x + 5">
-        <select>
-          <option value=">">></option>
-          <option value="<"><</option>
-          <option value="==">=</option>
-          <option value="!=">!=</option>
-          <option value=">=">>=</option>
-          <option value="<="><=</option>
-        </select>
-        <input placeholder="10">
-      </div>
-      <div class="inner-blocks"></div>`;
-  }
-
-  else if (type === "while") {
-    return `
-      <div class="condition">
-        <input placeholder="x">
-        <select>
-          <option value=">">></option>
-          <option value="<"><</option>
-          <option value="==">=</option>
-          <option value="!=">!=</option>
-          <option value=">=">>=</option>
-          <option value="<="><=</option>
-        </select>
-        <input placeholder="0">
-      </div>
-      <div class="inner-blocks"></div>`;
-  }
-
-  return;
-}
-
-function evaluateCondition(leftExpr, operator, rightExpr) {
-
-  const left = evaluateExpression(leftExpr);
-  const right = evaluateExpression(rightExpr);
-
-  switch (operator) {
-    case ">": return left > right;
-    case "<": return left < right;
-    case "==": return left === right;
-    case "!=": return left !== right;
-    case ">=": return left >= right;
-    case "<=": return left <= right;
-    default: return false;
-  }
-}
-
-// 2. ПАМЯТЬ ПРОГРАММЫ
-
-let memory = {};
-
-// 3. ЗАПУСК ПРОГРАММЫ
-
-document.getElementById("runBtn").addEventListener("click", executeProgram);
-
-function executeProgram() {
-  memory = {};
-  clearConsole();
-
-  const ast = buildAST();
-  executeAST(ast);
-
-  renderConsole();
-  console.log("Memory: ", memory);
-}
-
-// 4. ПОСТРОЕНИЕ AST
-
-function buildAST(container = workspace) {
-
-  const blocks = container.children;
-  const ast = [];
-
-  Array.from(blocks).forEach(block => {
-
-    const type = block.dataset.type;
-
-    if (type === "declare") {
-      const input = block.querySelector("input");
-
-      ast.push({
-        type: "declare",
-        variables: input.value
-          .split(",")
-          .map(n => n.trim())
-          .filter(n => n)
-      });
-    }
-
-    if (type === "assign") {
-      const inputs = block.querySelectorAll("input");
-
-      ast.push({
-        type: "assign",
-        variable: inputs[0].value.trim(),
-        expression: inputs[1].value.trim()
-      });
-    }
-
-    if (type === "if") {
-
-      const inputs = block.querySelectorAll(".condition input");
-      const operator = block.querySelector("select").value;
-
-      ast.push({
-        type: "if",
-        left: inputs[0].value.trim(),
-        operator,
-        right: inputs[1].value.trim(),
-        body: buildAST(block.querySelector(".inner-blocks"))
-      });
-    }
-
-    if (type === "while") {
-
-      const inputs = block.querySelectorAll(".condition input");
-      const operator = block.querySelector("select").value;
-
-      ast.push({
-        type: "while",
-        left: inputs[0].value.trim(),
-        operator,
-        right: inputs[1].value.trim(),
-        body: buildAST(block.querySelector(".inner-blocks"))
-      });
-    }
-
-  });
-
-  return ast;
-}
-
-// 5. ИНТЕРПРЕТАЦИЯ AST
-
-function executeAST(ast) {
-
-  ast.forEach(node => {
-
-    if (node.type === "declare") {
-      node.variables.forEach(name => {
-        if (!memory.hasOwnProperty(name)) {
-          memory[name] = 0;
-        }
-      });
-    }
-
-    if (node.type === "assign") {
-
-      if (!memory.hasOwnProperty(node.variable)) {
-        printError("Переменная не объявлена: " + node.variable);
-        return;
-      }
-
-      memory[node.variable] =
-        evaluateExpression(node.expression);
-    }
-
-    if (node.type === "if") {
-
-      if (evaluateCondition(node.left, node.operator, node.right)) {
-        executeAST(node.body);
-      }
-    }
-
-    if (node.type === "while") {
-
-      let safety = 0;
-
-      while (evaluateCondition(node.left, node.operator, node.right)) {
-
-        executeAST(node.body);
-
-        safety++;
-        if (safety > 1000) {
-          printError("Бесконечный цикл остановлен");
-          break;
-        }
-      }
-    }
-
-  });
-}
-
-// 6. ПАРСЕР ВЫРАЖЕНИЙ
-
-function tokenize(expression) {
-  const regex = /\d+|[a-zA-Z]+|[()+\-*/%]/g;
-  return expression.match(regex) || [];
-}
-
-function toRPN(tokens) {
-
-  const output = [];
-  const operators = [];
-
-  const precedence = {
-    "+": 1,
-    "-": 1,
-    "*": 2,
-    "/": 2,
-    "%": 2
-  };
-
-  tokens.forEach(token => {
-
-    if (/^\d+$/.test(token) || /^[a-zA-Z]+$/.test(token)) {
-      output.push(token);
-    }
-
-    else if ("+-*/%".includes(token)) {
-
-      while (
-        operators.length &&
-        precedence[operators[operators.length - 1]] >= precedence[token]
-      ) {
-        output.push(operators.pop());
-      }
-
-      operators.push(token);
-    }
-
-    else if (token === "(") {
-      operators.push(token);
-    }
-
-    else if (token === ")") {
-      while (operators.length && operators[operators.length - 1] !== "(") {
-        output.push(operators.pop());
-      }
-      operators.pop();
-    }
-
-  });
-
-  while (operators.length) {
-    output.push(operators.pop());
-  }
-
-  return output;
-}
-
-function evaluateRPN(rpn) {
-
-  const stack = [];
-
-  rpn.forEach(token => {
-
-    if (/^\d+$/.test(token)) {
-      stack.push(parseInt(token));
-    }
-
-    else if (/^[a-zA-Z]+$/.test(token)) {
-
-      if (!memory.hasOwnProperty(token)) {
-        throw new Error("Переменная не объявлена: " + token);
-      }
-
-      stack.push(memory[token]);
-    }
-
-    else {
-
-      const b = stack.pop();
-      const a = stack.pop();
-
-      switch (token) {
-        case "+": stack.push(a + b); break;
-        case "-": stack.push(a - b); break;
-        case "*": stack.push(a * b); break;
-        case "/": stack.push(Math.floor(a / b)); break;
-        case "%": stack.push(a % b); break;
-      }
-    }
-
-  });
-
-  return stack.pop();
-}
-
-function evaluateExpression(expression) {
-
-  try {
-    const tokens = tokenize(expression);
-    const rpn = toRPN(tokens);
-    return evaluateRPN(rpn);
-  } catch (e) {
-    printError(e.message);
-    return 0;
-  }
-}
-
-// 7. КОНСОЛЬ
-
-function clearConsole() {
-  document.getElementById("consoleOutput").innerHTML = "";
-}
-
-function renderConsole() {
-
-  const consoleOutput = document.getElementById("consoleOutput");
-
-  if (Object.keys(memory).length === 0) {
-    consoleOutput.innerHTML = "<div>No variables</div>";
-    return;
-  }
-
-  Object.keys(memory).forEach(name => {
-    const line = document.createElement("div");
-    line.innerHTML = `
-    <span style="color:#4fc3f7">${name}</span>
-    <span style="color:white"> = </span>
-    <span style="color:#ffd54f">${memory[name]}</span>
-  `;
-    consoleOutput.appendChild(line);
-  });
-}
-
-function printError(message) {
-  const consoleOutput = document.getElementById("consoleOutput");
-  const line = document.createElement("div");
-  line.style.color = "red";
-  line.textContent = "Error: " + message;
-  consoleOutput.appendChild(line);
 }

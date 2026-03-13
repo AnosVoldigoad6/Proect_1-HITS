@@ -4,60 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="input.css">
-  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-  />
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <title>Visual Algorithm Interpreter</title>
 </head>
 <body>
 
   <header class="header">
     <div class="logo">
-      <img src="/logo.png" alt="Logo">
+      <img src="logo.png" alt="Logo">
       <h1>Algorithm Builder</h1>
     </div>
-
     <div class="controls">
       <button id="runBtn">Run</button>
-      <button id="resetBtn">Reset</button>
+      <button id="resetBtn">✕ Reset</button>
+      <button id="trashBtn" class="icon-btn trash-btn" title="Перетащи блок для удаления">
+        <i class="bx bx-trash"></i>
+      </button>
       <button id="settingsBtn" class="icon-btn">
-        <i class='bx bx-cog'></i>
+        <i class="bx bx-cog"></i>
       </button>
     </div>
   </header>
 
-<main class="app-container">
+  <main class="app-container">
 
-  <aside class="sidebar">
-    <h2>Blocks</h2>
-    <div style="margin-top: 20px;" class="block" draggable="true" data-type="declare">Declaration</div>
-    <div class="block" draggable="true" data-type="assign">Assignment</div>
-    <div class="block" draggable="true" data-type="if">IF</div>
-    <div class="block" draggable="true" data-type="while">WHILE</div>
-  </aside>
+    <aside class="sidebar">
+      <h2>Blocks</h2>
+      <ul class="block-list">
+        <li class="block" draggable="true" data-type="declare">var</li>
+        <li class="block" draggable="true" data-type="assign">assign</li>
+        <li class="block" draggable="true" data-type="declareArray">array</li>
+        <li class="block" draggable="true" data-type="assignArray">arr[ ] =</li>
+        <li class="block" draggable="true" data-type="if">if / else</li>
+        <li class="block" draggable="true" data-type="while">while</li>
+        <li class="block" draggable="true" data-type="for">for</li>
+      </ul>
+    </aside>
 
-  <div class="main-area">
-    
-    <div class="workspace-wrapper">
-      <div id="workspace" class="workspace"></div>
+    <div class="main-area">
+      <div class="workspace-wrapper">
+        <div id="workspace" class="workspace"></div>
+      </div>
+      <div class="console">
+        <div class="console-header">Console</div>
+        <div class="console-output" id="consoleOutput"></div>
+      </div>
     </div>
 
-    <div class="console">
-      <div class="console-header">Console</div>
-      <div class="console-output" id="consoleOutput"></div>
-    </div>
-
-  </div>
-
-</main>
+  </main>
 
   <div class="modal" id="settingsModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Settings</h3>
-        <i class='bx bx-x close-btn' id="closeModal"></i>
+        <i class="bx bx-x close-btn" id="closeModal"></i>
       </div>
       <div class="modal-body">
         <label class="dark-mode-label">
@@ -70,8 +71,7 @@
     </div>
   </div>
 
-  <script src="/js/main.js"></script>
-  <script src="/js/dom.js"></script>
+  <script type="module" src="js/main.js"></script>
 
 </body>
 </html>
